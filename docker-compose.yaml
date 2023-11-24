@@ -14,10 +14,12 @@ services:
     build:
       context: ./worker
       dockerfile: Dockerfile_worker
-    ports:
-      - "8080:8080"
+ #   ports:
+ #     - "8080:8080"
     networks:
       - mynetwork
+    deploy:
+      replicas: 10 
 
   worker1:
     build:

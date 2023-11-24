@@ -55,4 +55,10 @@ EXERCICE 3: Spécialisation des workers
 
  ![Alt text](images/Exercice_3_Sp%C3%A9cialisation_des_workers.png)   
 
- 
+
+EXERCICE 4: Nombre de worker dynamique
+    On repasse avec des workers généraliste. On veut maintenant pouvoir ajouter un nombre dynamique de worker pendant l'exécution du planner.
+
+    Les nouveaux workers fraichement lancés doivent s'enregistrer auprès du planner pour pouvoir recevoir des tâches.
+![Alt text](images/Exercice4_Nombre_de_worker_dynamique.png)
+![Alt text](images/Exercice4_Nombre_de_worker_dynamique2.png)
