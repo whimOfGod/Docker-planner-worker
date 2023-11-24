@@ -8,4 +8,7 @@ EXPOSE 8080
 
 COPY . .
 
+EXPOSE 3000
+ENV TASKS=20
+
 CMD ["node", "main.js"]
