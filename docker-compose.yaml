@@ -6,14 +6,28 @@ services:
       context: ./planner
       dockerfile: Dockerfile_planner
     ports:
-      - "8080:8080"
+      - "3000:3000"
+    networks:
+      - mynetwork
 
   worker:
     build:
       context: ./worker
       dockerfile: Dockerfile_worker
     ports:
-      - "8081:8080"
+      - "8080:8080"
+    networks:
+      - mynetwork
 
-    depends_on:
-      - planner
+  worker1:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile_worker
+    environment:
+      - PORT=8070
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
