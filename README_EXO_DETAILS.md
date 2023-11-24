@@ -9,3 +9,9 @@ EXERCICE 1: Dockeriser les ServeurS
     pour lancer et obtenir nos containers sur notre environnement Docker à savoir: les ports, la version ... 
 
 ![Alt text](images/Exercice1_Dokerisation.png)
+
+    - ensuite en éxécute que 4 tâches
+
+![Alt text](images/Exercice1_(suite)_lancemant_de_4_taches.png)
+
+
