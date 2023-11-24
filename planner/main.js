@@ -12,79 +12,105 @@ const args = () => ({ a: randInt(0, 40), b: randInt(0, 40) })
 const generateTasks = (i) =>
   new Array(i).fill(1).map((_) => ({ type: taskType(), args: args() }))
 
-  let workers = [ 
-    { url: 'http://worker:8080', id: '0' },
-    { url: 'http://worker1:8070', id: '1' }
-    ]
+  let workers = [
+    { url: 'http://worker:8080', id: '0', type: 'mult' },
+    { url: 'http://worker1:8070', id: '1', type: 'add' }
+  ]
 
-const app = express()
-app.use(express.json())
-app.use(
-  express.urlencoded({
-    extended: true,
+  let multWorkers = workers.filter((w) => w.type == 'mult');
+  let addWorkers = workers.filter((w) => w.type == 'add');
+  
+  const app = express()
+  app.use(express.json())
+  app.use(
+    express.urlencoded({
+      extended: true,
+    })
+  )
+  app.get('/', (req, res) => {
+    res.send(JSON.stringify(workers))
   })
-)
-
-app.get('/', (req, res) => {
-  res.send(JSON.stringify(workers))
-})
-
-app.post('/register', (req, res) => {
-  const { url, id } = req.body
-  console.log(`Register: adding ${url} worker: ${id}`)
-  workers.push({ url, id })
-  res.send('ok')
-})
-
-let tasks = generateTasks(nbTasks)
-let taskToDo = nbTasks
-
-const wait = (mili) =>
-  new Promise((resolve, reject) => setTimeout(resolve, mili))
-
-const sendTask = async (worker, task) => {
-  console.log(`=> ${worker.url}/${task.type}`, task)
-  workers = workers.filter((w) => w.id !== worker.id)
-  tasks = tasks.filter((t) => t !== task)
-  const request = fetch(`${worker.url}/${task.type}`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(task.args),
+  app.post('/register', (req, res) => {
+    const { url, id } = req.body
+    console.log(`Register: adding ${url} worker: ${id}`)
+    workers.push({ url, id })
+    res.send('ok')
   })
-    .then((res) => {
-      workers = [...workers, worker]
-      return res.json()
+  let tasks = generateTasks(nbTasks)
+  let taskToDo = nbTasks
+  const wait = (mili) =>
+    new Promise((resolve, reject) => setTimeout(resolve, mili))
+  
+  const sendTask = async (worker, task) => {
+    console.log(`=> ${worker.url}/${task.type}`, task)
+    if (worker.type == 'mult'){
+      multWorkers = multWorkers.filter((w) => w.id !== worker.id)
+    }
+  
+    if (worker.type == 'add'){
+      addWorkers = addWorkers.filter((w) => w.id !== worker.id)
+    }
+  
+    tasks = tasks.filter((t) => t !== task)
+    const request = fetch(`${worker.url}/${task.type}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(task.args),
     })
-    .then((res) => {
-      taskToDo -= 1
-      console.log('---')
-      console.log(nbTasks - taskToDo, '/', nbTasks, ':')
-      console.log(task, 'has res', res)
-      console.log('---')
-      return res
-    })
-    .catch((err) => {
-      console.error(task, ' failed', err.message)
-      tasks = [...tasks, task]
-    })
-}
-
-const main = async () => {
-  console.log(tasks)
-  while (taskToDo > 0) {
-    await wait(100)
-    if (workers.length === 0 || tasks.length === 0) continue
-    sendTask(workers[0], tasks[0])
+      .then((res) => {
+        if (worker.type == 'mult'){
+          multWorkers = [...multWorkers, worker]
+        }
+  
+        if (worker.type == 'add'){
+          addWorkers = [...addWorkers, worker]
+        }
+        return res.json()
+      })
+      .then((res) => {
+        taskToDo -= 1
+        console.log('---')
+        console.log(nbTasks - taskToDo, '/', nbTasks, ':')
+        console.log(task, 'has res', res)
+        console.log('---')
+        return res
+      })
+      .catch((err) => {
+        console.error(task, ' failed', err.message)
+        tasks = [...tasks, task]
+      })
   }
-  console.log('end of tasks')
-  server.close()
-}
-
-const server = app.listen(port, () => {
-  console.log(`Register listening at http://localhost:${port}`)
-  console.log('starting tasks...')
-  main()
-})
+  
+  const main = async () => {
+    console.log(tasks)
+    console.log("workers : ",workers)
+    console.log("multworkers : ",multWorkers)
+    console.log("addworkers : ",addWorkers)
+  
+    while (taskToDo > 0) {
+      await wait(100)
+      if (multWorkers.length === 0 || addWorkers.length === 0 || tasks.length === 0) continue
+  
+     if(tasks[0].type == 'mult')
+     {
+     multWorkers.length == 0 ? console.log("No worker available") : sendTask(multWorkers[0], tasks[0]) 
+     continue
+    }
+    if(tasks[0].type == 'add' )
+    {
+      multWorkers.length == 0 ? tconsole.log("No worker available") : sendTask(addWorkers[0], tasks[0])
+      continue
+    }
+   continue
+    }
+    console.log('end of tasks')
+    server.close()
+  }
+  const server = app.listen(port, () => {
+    console.log(`Register listening at http://localhost:${port}`)
+    console.log('starting tasks...')
+    main()
+  })
